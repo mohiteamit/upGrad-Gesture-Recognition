@@ -1,0 +1,16 @@
+# For local
+# Core Libraries
+tensorflow
+mediapipe
+opencv-python
+
+# Additional Libraries
+numpy
+pandas
+matplotlib
+scikit-learn
+seaborn
+tensorboard
+scipy
+Pillow
+gdown
