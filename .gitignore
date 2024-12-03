@@ -1,6 +1,7 @@
 # Ignore all content in the data folder
 ./data
 data/*
+models_to_evaluate/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
