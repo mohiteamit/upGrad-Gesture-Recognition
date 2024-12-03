@@ -22,7 +22,7 @@ def checks_and_balances():
     """
     checks_and_balances()
 
-    Self contain function to do all required checks and balances
+    Self-contained function to do all required checks and balances
     """
     import tensorflow as tf
     from tensorflow.keras import mixed_precision
@@ -32,11 +32,13 @@ def checks_and_balances():
     if gpus:
         gpu_details = tf.config.experimental.get_device_details(gpus[0])
         if 'compute_capability' in gpu_details:
-            compute_capability = float(gpu_details['compute_capability'])
+            compute_capability = gpu_details['compute_capability']
+            compute_capability = float(f"{compute_capability[0]}.{compute_capability[1]}")
             # Mixed precision is supported for GPUs with compute capability >= 7.0
             if compute_capability >= 7.0:
                 policy = mixed_precision.Policy('mixed_float16')
                 mixed_precision.set_global_policy(policy)
+                print("Mixed precision is enabled with policy 'mixed_float16'. GPU compute capability:", compute_capability)
 
 def set_seed(seed=42):
     """
