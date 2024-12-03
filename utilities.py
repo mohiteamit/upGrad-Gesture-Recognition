@@ -128,20 +128,27 @@ class MediaPipeHandProcessor:
         return np.array([self.process_frame(frame) for frame in sequence_frames])
 
 class GestureDataGenerator(Sequence):
-    def __init__(
-        self, 
-        data_path: str, 
-        labels_csv: str, 
-        batch_size: int, 
-        image_size=(224, 224), 
-        augmentations=None, 
-        shuffle: bool = False, 
-        load_fraction: float = 1.0,
-        use_mediapipe: bool = False,
-        sequence_length: int = 30,
-        debug: bool = False,
-        seed: int = 42,
-    ):
+    """
+    A generator class for producing gesture data sequences for training or evaluation.
+
+    Parameters:
+        data_path (str): Path to the dataset directory containing gesture data.
+        labels_csv (str): Path to the CSV file with labels and sequence information.
+        batch_size (int): Number of samples per batch.
+        image_size (tuple): Desired size of the images, default is (224, 224).
+        augmentations (callable, optional): Data augmentation pipeline to apply on images.
+        shuffle (bool): Whether to shuffle the data sequences, default is False.
+        load_fraction (float): Fraction of the dataset to load, value between 0 and 1, default is 1.0.
+        use_mediapipe (bool): Whether to preprocess data using MediaPipe, default is False.
+        sequence_length (int): Number of frames per gesture sequence, default is 30.
+        debug (bool): Whether to enable debugging information, default is False.
+        seed (int): Random seed for reproducibility, default is 42.
+
+    Returns:
+        GestureDataGenerator: An instance of the generator class ready for data generation.
+    """
+
+    def __init__(self, data_path: str, labels_csv: str, batch_size: int, image_size=(224, 224), augmentations=None, shuffle: bool = False, load_fraction: float = 1.0, use_mediapipe: bool = False, sequence_length: int = 30, debug: bool = False, seed: int = 42):
         assert 0 < load_fraction <= 1.0, "load_fraction must be between 0 and 1"
 
         self.seed = seed
@@ -169,7 +176,16 @@ class GestureDataGenerator(Sequence):
         # Print details of the generator
         self._print_details()
 
-    def _load_labels(self, labels_csv):
+    def _load_labels(self, labels_csv: str) -> dict:
+        """
+        Load and parse labels from a CSV file.
+
+        Parameters:
+            labels_csv (str): Path to the CSV file containing sequence names and corresponding labels.
+
+        Returns:
+            dict: A dictionary mapping sequence names to their integer labels.
+        """
         labels = {}
         with open(labels_csv, 'r') as f:
             for line in f:
@@ -178,23 +194,65 @@ class GestureDataGenerator(Sequence):
         return labels
 
     def _filter_fraction(self, load_fraction: float) -> None:
+        """
+        Filter the dataset to include only a fraction of the total sequences.
+
+        Parameters:
+            load_fraction (float): The fraction of sequences to retain, must be between 0 and 1.
+
+        Returns:
+            None
+        """
         total_sequences = len(self.sequence_paths)
         num_sequences = int(total_sequences * load_fraction)
         self.sequence_paths = self.sequence_paths[:num_sequences]
 
     @property
     def num_classes(self) -> int:
+        """
+        Get the number of unique classes in the dataset.
+
+        Returns:
+            int: The total number of unique classes.
+        """
         return len(set(self.labels.values()))
 
     def __len__(self) -> int:
+        """
+        Calculate the total number of batches per epoch.
+
+        Returns:
+            int: The number of batches, computed as the ceiling of the total sequences divided by the batch size.
+        """
         return int(np.ceil(len(self.sequence_paths) / self.batch_size))
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Fetch a single batch of data.
+
+        Parameters:
+            index (int): Index of the batch to retrieve.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing the batch of input data (X) and corresponding labels (y).
+        """
         batch_sequences = self.sequence_paths[index * self.batch_size: (index + 1) * self.batch_size]
         X, y = self._generate_data(batch_sequences)
         return X, y
 
     def _generate_data(self, batch_sequences: List[str], debug: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate input data and labels for a batch of sequences.
+
+        Parameters:
+            batch_sequences (List[str]): List of sequence names to process.
+            debug (bool): Whether to enable debug mode for additional information, default is False.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing:
+                - X: Processed input data for the batch (images or keypoints).
+                - y: One-hot encoded labels for the batch.
+        """
         X = []
         y = []
 
@@ -242,6 +300,15 @@ class GestureDataGenerator(Sequence):
         return X, y
 
     def _apply_augmentations(self, sequence_images: np.ndarray) -> np.ndarray:
+        """
+        Apply data augmentations to a sequence of images.
+
+        Parameters:
+            sequence_images (np.ndarray): Array of images in the sequence to be augmented.
+        
+        Returns:
+            np.ndarray: Augmented sequence of images.
+        """
         if not self.augmentations:              # If no augmentations are provided, return as is
             return sequence_images
 
@@ -278,6 +345,17 @@ class GestureDataGenerator(Sequence):
         return np.array(augmented_sequence, dtype=np.float32)
 
     def _resize_and_normalize_frame(self, img: np.ndarray, debug: bool = False) -> np.ndarray:
+        """
+        Resize and normalize a single image frame to match the target dimensions.
+
+        Parameters:
+            img (np.ndarray): The input image to resize and normalize.
+            debug (bool): Whether to enable debug mode for additional information, default is False.
+
+        Returns:
+            np.ndarray: The resized and normalized image. If `use_mediapipe` is True, the image is returned as uint8;
+                        otherwise, it is normalized to [0, 1] for training.
+        """
         original_h, original_w = img.shape[:2]
         target_h, target_w = self.image_size
         target_aspect = target_w / target_h
@@ -308,12 +386,24 @@ class GestureDataGenerator(Sequence):
             return canvas.astype(np.float32) / 255.0
 
     def _print_details(self) -> None:
+        """
+        Print details about the data generator configuration, including batch and sequence information.
+
+        Returns:
+            None
+        """
         num_batches = len(self)
         sequence_count = len(self.sequence_paths)
         sequence_length = self.sequence_length
         print(f"{num_batches} batches created, each of size {self.batch_size}, with {sequence_count} sequences of {sequence_length} images each.", f"Use MediaPipe: {self.use_mediapipe}")
 
     def on_epoch_end(self) -> None:
+        """
+        Perform actions at the end of each epoch, such as shuffling the data if enabled.
+
+        Returns:
+            None
+        """
         if self.shuffle:
             rng = np.random.RandomState(self.seed)
             rng.shuffle(self.sequence_paths)
@@ -369,30 +459,24 @@ def visualize_sequence_with_keypoints(train_generator, images_per_row=5):
     plt.tight_layout()
     plt.show()
 
-def get_callbacks(
-    filepath: str,
-    metric: str = 'accuracy',
-    patience_lr: int = 5,
-    patience_es: int = 10,
-    min_lr: float = 1e-6,
-    save_best_only : bool=True,
-    lr_factor : float = 0.5
-) -> Tuple[ModelCheckpoint, ReduceLROnPlateau, EarlyStopping]:
+def get_callbacks(filepath: str, metric: str = 'accuracy', patience_lr: int = 5, patience_es: int = 10, min_lr: float = 1e-6, save_best_only: bool = True, lr_factor: float = 0.5) -> Tuple[ModelCheckpoint, ReduceLROnPlateau, EarlyStopping]:
     """
-    Creates and returns a set of common callbacks for training deep learning models.
+    Create and return a set of callbacks for deep learning model training.
 
-    Args:
-        filepath (str): Path to save the best model.
-        metric (str): Metric to monitor (default is 'accuracy').
-        patience_lr (int): Patience for learning rate reduction.
-        patience_es (int): Patience for early stopping.
-        min_lr (float): Minimum learning rate for ReduceLROnPlateau.
+    Parameters:
+        filepath (str): Path to save the best model based on monitored metric.
+        metric (str): Metric to monitor for checkpoint and early stopping, default is 'accuracy'.
+        patience_lr (int): Number of epochs to wait before reducing learning rate on plateau, default is 5.
+        patience_es (int): Number of epochs to wait before early stopping, default is 10.
+        min_lr (float): Minimum learning rate for ReduceLROnPlateau, default is 1e-6.
+        save_best_only (bool): Whether to save only the best model, default is True.
+        lr_factor (float): Factor to reduce the learning rate, default is 0.5.
 
     Returns:
         Tuple[ModelCheckpoint, ReduceLROnPlateau, EarlyStopping]:
-            - ModelCheckpoint: Saves the best model based on validation metric.
-            - ReduceLROnPlateau: Reduces the learning rate when validation loss plateaus.
-            - EarlyStopping: Stops training early if validation metric does not improve.
+            - ModelCheckpoint: Saves the best model during training.
+            - ReduceLROnPlateau: Adjusts learning rate when validation loss plateaus.
+            - EarlyStopping: Halts training early if validation metric does not improve.
     """
     # Checkpoint to save the best model
     checkpoint_callback = ModelCheckpoint(
