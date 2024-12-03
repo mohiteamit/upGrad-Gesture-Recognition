@@ -375,7 +375,8 @@ def get_callbacks(
     patience_lr: int = 5,
     patience_es: int = 10,
     min_lr: float = 1e-6,
-    save_best_only=True
+    save_best_only : bool=True,
+    lr_factor : float = 0.5
 ) -> Tuple[ModelCheckpoint, ReduceLROnPlateau, EarlyStopping]:
     """
     Creates and returns a set of common callbacks for training deep learning models.
@@ -405,7 +406,7 @@ def get_callbacks(
     # Reduce learning rate when validation loss plateaus
     reduce_lr_callback = ReduceLROnPlateau(
         monitor='val_loss',
-        factor=0.5,
+        factor=lr_factor,
         patience=patience_lr,
         min_lr=min_lr,
         verbose=1
