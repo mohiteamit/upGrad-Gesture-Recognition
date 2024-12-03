@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import random
 import os
+import requests
 import cv2
 import numpy as np
 try:
@@ -12,30 +13,30 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
 from tensorflow.keras.layers import Input, GRU, Dense, Dropout
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 import matplotlib.pyplot as plt
 
-def set_memorry_limit_for_tf():
+def checks_and_balances():
+    """
+    checks_and_balances()
+
+    Self contain function to do all required checks and balances
+    """
+    import tensorflow as tf
+    from tensorflow.keras import mixed_precision
+
+    # Check if the machine is equipped with a suitable GPU
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:
-        try:
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            print("Memory growth enabled for GPUs")
-        except RuntimeError as e:
-            print(e)
-
-    if gpus:
-        try:
-            tf.config.set_logical_device_configuration(
-                gpus[0],
-                [tf.config.LogicalDeviceConfiguration(memory_limit=20000)]  # Limit to 20GB
-            )
-            print("GPU memory limited to 20GB")
-        except RuntimeError as e:
-            print(e)
+        gpu_details = tf.config.experimental.get_device_details(gpus[0])
+        if 'compute_capability' in gpu_details:
+            compute_capability = float(gpu_details['compute_capability'])
+            # Mixed precision is supported for GPUs with compute capability >= 7.0
+            if compute_capability >= 7.0:
+                policy = mixed_precision.Policy('mixed_float16')
+                mixed_precision.set_global_policy(policy)
 
 def set_seed(seed=42):
     """
@@ -484,6 +485,7 @@ def get_callbacks(filepath: str, metric: str = 'accuracy', patience_lr: int = 5,
         monitor=f'val_{metric}',
         save_best_only=save_best_only,
         mode='max',
+        save_weights_only=False,
         verbose=0
     )
 
