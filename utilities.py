@@ -113,12 +113,14 @@ def plot_training_history(histories: List, ylim_loss: Tuple[float, float] = (0, 
 class MediaPipeHandProcessor:
     def __init__(self) -> None:
         self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
+        self.hands = self.mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5, model_complexity=1)
 
     def process_frame(self, frame: np.ndarray) -> np.ndarray:
+        # Convert frame to RGB for MediaPipe processing
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.hands.process(frame_rgb)
 
+        # Extract landmarks or default to zeros
         if results.multi_hand_landmarks:
             hand_landmarks = results.multi_hand_landmarks[0]
             keypoints = np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark])
@@ -128,6 +130,7 @@ class MediaPipeHandProcessor:
         return keypoints
 
     def process_sequence(self, sequence_frames: np.ndarray) -> np.ndarray:
+        # Process a sequence of frames
         return np.array([self.process_frame(frame) for frame in sequence_frames])
 
 class GestureDataGenerator(Sequence):
@@ -151,7 +154,7 @@ class GestureDataGenerator(Sequence):
         GestureDataGenerator: An instance of the generator class ready for data generation.
     """
 
-    def __init__(self, data_path: str, labels_csv: str, batch_size: int, image_size=(224, 224), augmentations=None, shuffle: bool = False, load_fraction: float = 1.0, use_mediapipe: bool = False, sequence_length: int = 30, debug: bool = False, seed: int = 42):
+    def __init__(self, data_path: str, labels_csv: str, batch_size: int = 8, image_size : Tuple[int, int] = (224, 224), augmentations=None, shuffle: bool = False, load_fraction: float = 1.0, use_mediapipe: bool = False, sequence_length: int = 30, debug: bool = False, seed: int = 42):
         assert 0 < load_fraction <= 1.0, "load_fraction must be between 0 and 1"
 
         self.seed = seed

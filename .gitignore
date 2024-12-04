@@ -1,6 +1,9 @@
 # Ignore all content in the data folder
 ./data
 data/*
+model_to_evaluate/*
+models_to_evaluate/*
+model_to_evaluate/
 models_to_evaluate/
 
 # Byte-compiled / optimized / DLL files
