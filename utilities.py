@@ -486,7 +486,7 @@ def get_callbacks(filepath: str, metric: str = 'accuracy', patience_lr: int = 5,
     """
     # Checkpoint to save the best model
     checkpoint_callback = ModelCheckpoint(
-        filepath=f"{filepath}.keras",
+        filepath=f"{filepath}.h5",
         monitor=f'val_{metric}',
         save_best_only=save_best_only,
         mode='max',
