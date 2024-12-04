@@ -1,22 +1,14 @@
-# For JarvisLab
-
-# Core Libraries
-tensorflow==2.13.1
-mediapipe>=0.10.0
-opencv-python>=4.7.0
-
-# Dependency Compatibility
-protobuf>=3.20.3,<4
-typing-extensions<4.6.0
+# For local
+tensorflow==2.10.0
+mediapipe==0.10.11
+opencv-python==4.10.0.84
 
 # Additional Libraries
-numpy>=1.23.0
-pandas>=1.5.0
-matplotlib>=3.6.0
-scikit-learn>=1.2.0
-seaborn>=0.12.0
-tensorboard==2.13.0
-scipy>=1.10.0
-Pillow>=9.0.0
-albumentations>=1.3.0
-gdown
+numpy==1.21.1
+pandas==1.4.3
+matplotlib==3.5.0
+scikit-learn==0.24.2
+seaborn==0.13.2
+scipy==1.10.1
+Pillow==9.3.0
+gdown==5.2.0
