@@ -4,10 +4,30 @@ import os
 import requests
 import cv2
 import numpy as np
+
+#--------------------------------
+# Install media pipe if missing
 try:
     import mediapipe as mp
 except ImportError:
-    print("mediapipe module not found. Skipping...")
+    import subprocess
+    import sys
+    print("mediapipe module not found. Installing mediapipe...")
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "mediapipe", "--quiet"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode != 0:
+            print(f"Error installing mediapipe: {result.stderr}")
+        else:
+            print("mediapipe installed successfully.")
+            import mediapipe as mp  # Retry importing after installation
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+#--------------------------------
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
