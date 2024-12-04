@@ -1,26 +1,26 @@
 #!/bin/bash
 
-mkdir /home/working
-cd /home/working
-git clone https://github.com/mohiteamit/upGrad-Gesture-Recognition.git
-python -m venv .venv/tensorFlow
-source /home/working.venv/tensorFlow/bin/activate
-ln -s /home/datasets/Project_data /home/working/upGrad-Gesture-Recognition/data
+# mkdir /home/working
+# cd /home/working
+# git clone https://github.com/mohiteamit/upGrad-Gesture-Recognition.git
+# python -m venv .venv/tensorFlow
+# source /home/working.venv/tensorFlow/bin/activate
+# ln -s /home/datasets/Project_data /home/working/upGrad-Gesture-Recognition/data
 
 
-# cuDNN update - do this before tensorflow install or reompile
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb
-dpkg-deb -x cuda-keyring_1.1-1_all.deb ~/local/
+# # cuDNN update - do this before tensorflow install or reompile
+# wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb
+# dpkg-deb -x cuda-keyring_1.1-1_all.deb ~/local/
 
-cd ~/local
-ls
+# cd ~/local
+# ls
 
-export PATH=~/local/usr/bin:$PATH
-export LD_LIBRARY_PATH=~/local/usr/lib:$LD_LIBRARY_PATH
+# export PATH=~/local/usr/bin:$PATH
+# export LD_LIBRARY_PATH=~/local/usr/lib:$LD_LIBRARY_PATH
 
-echo 'export PATH=~/local/usr/bin:$PATH' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=~/local/usr/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-source ~/.bashrc
+# echo 'export PATH=~/local/usr/bin:$PATH' >> ~/.bashrc
+# echo 'export LD_LIBRARY_PATH=~/local/usr/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+# source ~/.bashrc
 
 
 # # Define directories

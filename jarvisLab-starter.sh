@@ -9,30 +9,10 @@ export DEBIAN_FRONTEND=noninteractive
 mkdir -p "$WORK_DIR/bin"
 cd "$WORK_DIR"
 
-# Install Python and dependencies (local installation)
-if ! command -v python3.10 &> /dev/null; then
-  echo "Installing Python 3.10..."
-  wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz
-  tar -xvf Python-3.10.9.tgz
-  cd Python-3.10.9
-  ./configure --prefix="$WORK_DIR/python3.10"
-  make && make install
-  export PATH="$WORK_DIR/python3.10/bin:$PATH"
-  cd ..
-fi
+git clone https://github.com/mohiteamit/upGrad-Gesture-Recognition.git
 
-# Set up a Python virtual environment
-echo "Setting up Python virtual environment..."
-$WORK_DIR/python3.10/bin/python3.10 -m venv "$WORK_DIR/env"
-source "$WORK_DIR/env/bin/activate"
-
-# Upgrade pip and install required libraries
 pip install --upgrade pip
-pip install tensorflow==2.18.0 opencv-python mediapipe numpy pandas matplotlib scikit-learn seaborn tensorboard scipy Pillow gdown jupyter notebook
 
-# Confirm installation and GPU access
-echo "Confirming TensorFlow GPU setup..."
-python -c "import tensorflow as tf; print('GPUs:', tf.config.list_physical_devices('GPU'))"
+pip install mediapipe gdown
 
-echo "Setup complete. Activate your environment with:"
-echo "source $WORK_DIR/env/bin/activate"
+gdown "https://drive.google.com/uc?id=1ehyrYBQ5rbQQe6yL4XbLWe3FMvuVUGiL" -O "data.zip"
